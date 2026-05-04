@@ -1,0 +1,9 @@
+ [project]
+name = "bacteria-lab-assistant"
+version = "0.1.0"
+description = "Bacteria prediction system for lab assistants"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

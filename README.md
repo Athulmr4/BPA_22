@@ -1,328 +1,116 @@
-# AI-Oriented Bacterial Colony Detection & Protein Structure-Based Antibiotic Insight
+# Bacteria Lab Assistant Predictor
 
+This project trains and runs a bacteria + fungi image analysis pipeline for lab assistance.
 
-> ## what are we actually targeting
-> To build a Fast, AI assisted identification of bacterial infection and intelligent antibiotic decision support for laboratories.
+It performs:
+- Organism type prediction (`bacteria` vs `fungi`)
+- Gram-type prediction (internal classifier: gram-positive vs gram-negative, with fungi mapped to `fungi`)
+- Species prediction (constrained by taxonomy group)
+- Colony detection and measurement from input image
+- Morphology prediction focused on `cocci`, `bacilli`, `spiral`, with fungal override
+- Exact JSON output contracts in **basic** and **advanced** mode
 
- In simple words:
-```md
-- Detect bacteria
-- Identify its critical proteins
-- Suggest effective antibiotics  
+> Dataset root expected: `Bacteria dataset/`
+
+## Output contracts
+
+### Basic output
+
+```json
+{
+  "organism_type": "bacteria",
+  "predicted_bacteria_name": "Bacillus subtilis",
+  "bacteria_type": "gram_positive",
+  "total_colonies_detected": 42,
+  "dominant_shape": "cocci",
+  "confidence": 0.81
+}
 ```
 
-##  Project Overview
+### Advanced output
 
-This project proposes an interdisciplinary AI pipeline that integrates:
-
--  Computer Vision (Bacterial Detection)
--  Bioinformatics (Protein Data Retrieval)
--  Structural Biology (Protein Folding & Analysis)
--  AI-Based Antibiotic Recommendation
-
-The goal is to build an AI-assisted system that detects bacteria from microscopic images, analyzes essential protein structures, and provides antibiotic target insight based on structural characteristics.
-
->  This system provides computational insights and does NOT replace laboratory testing or medical prescription.
----
-#  PART 1: Bacteria Detection
-
-##  Objective
-Input: Microscopic or Petri dish image  
-Output: Identified bacterial species
-
----
-
-### Advanced Bacteria Detection Pipeline
-<details>
-
-- Overview Architecture
-```md
-Microscopic Petri Dish Image
-            ↓
-        YOLO Model
- (Detect & draw bounding boxes)
-            ↓
-    Crop individual colonies
-            ↓
-      CNN Classifier
- (Classify bacteria type)
-            ↓
- Final Output:
- - Colony count
- - Location
- - Bacteria type
+```json
+{
+  "organism_type": "bacteria",
+  "predicted_bacteria_name": "Bacillus subtilis",
+  "bacteria_type": "gram_positive",
+  "total_colonies": 42,
+  "colonies": [
+    {
+      "id": 1,
+      "area": 109.5,
+      "perimeter": 45.69,
+      "circularity": 0.65,
+      "aspect_ratio": 1.02,
+      "solidity": 0.89,
+      "equivalent_diameter": 11.8,
+      "mean_intensity": 132.4,
+      "predicted_shape": "cocci"
+    }
+  ],
+  "final_morphology": {
+    "dominant_shape": "cocci",
+    "distribution": "clustered",
+    "confidence": 0.87
+  }
+}
 ```
 
-</details>
+## Notes about spiral + fungi
 
-## Steps
+The provided dataset contains bacteria mainly mapped to cocci/bacilli classes.
+Spiral class is produced via morphology heuristics (`aspect_ratio` and `circularity`) when contours match spiral-like geometry.
+Fungal samples override the dominant shape to `fungal` for clarity.
 
-<details>
+## Installation
 
-### 1️ Dataset Collection
-Collect labeled microscopic images of:
-- Escherichia coli
-- Staphylococcus aureus
-- Pseudomonas aeruginosa
-
-Images should include:
-- Gram staining
-- Colony morphology
-- Shape (rod, cocci, etc.)
-
----
-
-### 2️ Preprocessing
-- Resize images
-- Normalize pixel values
-- Contrast enhancement
-- Noise removal
-
----
-
-### 3️ Model Selection
-Possible models:
-- CNN (ResNet / EfficientNet) – classification
-- YOLO – colony detection
-- U-Net – segmentation
-
----
-
-### 4️ Output Example
-```md
-Species: Escherichia coli
-Confidence: 96.4%
-Colony count: 128
-Average colony size: 0.82 mm
-```
-</details>
-
----
-
-# PART 2: Fetching Protein Data & Structure
-
-##  Objective
-Input: Identified bacterial species  
-Output: 3D structure of essential protein target
-
----
-
-<details>
-
-##  Step 1: Fetch Essential Protein
-
-Use biological databases:
-
-- UniProt
-- NCBI
-
-Select essential proteins such as:
-
-- DNA gyrase (DNA replication)
-- Penicillin-binding protein (cell wall synthesis)
-- Ribosomal proteins
-- Metabolic enzymes
-
-Download:
-- Amino acid sequence (FASTA format)
-
-
----
-
-##  Step 2: Protein Folding (Structure Prediction)
-
-Use:
-
-- AlphaFold
-OR
-- RCSB Protein Data Bank (PDB)
-
----
-
-###  Output from Protein Folding
-
-- 3D atomic coordinates
-- Alpha helices
-- Beta sheets
-- Surface pockets
-- Binding regions
-
-This provides structural insight into how the protein functions.
-
----
-
-##  Step 3: Structural Feature Extraction
-
-From the 3D structure, compute:
-
-- Binding pocket volume
-- Surface area
-- Hydrophobicity
-- Electrostatic charge
-- Druggability score
-
-These structural features will be used for antibiotic recommendation.
-
-</details>
-
----
-
-#  PART 3: Antibiotic Recommendation
-
-<details>
-
-##  Objective
-Input:
-- Bacterial species
-- Target protein structure
-- Structural features
-
-Output:
-- Recommended antibiotic class
-
----
-
-##  Option A: Rule-Based Recommendation (Simpler)
-
-Example logic:
-
-If:
-- Bacteria = Escherichia coli
-- Target = DNA gyrase
-
-Then:
-- Recommend Fluoroquinolones (e.g., Ciprofloxacin)
-
-If:
-- Target = Penicillin-binding protein
-
-Then:
-- Recommend Beta-lactam antibiotics
-
-This is knowledge-based and scientifically valid.
-
----
-
-##  Option B: ML-Based Recommendation (Advanced)
-
-Create dataset:
-
-| Structural Features | Effective Antibiotic |
-|--------------------|----------------------|
-| Pocket volume, charge | Drug A |
-| Surface polarity | Drug B |
-
-Train model:
-- Random Forest
-- XGBoost
-- Neural Network
-
-Model predicts best antibiotic class based on structural features.
-
----
-
-#  Complete System Pipeline
-```md
-Microscopic Image
-↓
-Bacteria Detection Model (CNN)
-↓
-Identified Species
-↓
-Fetch Essential Protein Sequence
-↓
-Protein Folding (AlphaFold / PDB)
-↓
-Extract Structural Features
-↓
-Antibiotic Recommendation Model
-↓
-Final Insight Report
+```bash
+python -m pip install -r requirements.txt
 ```
 
-</details>
+## Train model
 
----
-
-#  Example Final Output
-```md
-Detected Bacteria: Escherichia coli
-Essential Protein Analyzed: DNA gyrase
-Active Site Identified: Yes
-Binding Pocket Score: High
-Predicted Effective Antibiotic Class: Fluoroquinolones
-Resistance Risk: Medium
+```bash
+python train_model.py
 ```
 
+Trained artifact is saved to:
+- `artifacts/bacteria_models.joblib`
+- `artifacts/bacteria_models.metrics.json`
 
----
+## Run prediction
 
-#  Scientific Importance
+### Basic mode
 
-This project demonstrates:
+```bash
+python predict_bacteria.py --image "Bacteria dataset/Bacillus subtilis_gram stain/Bacillus subtilis_gram stain_1.png" --mode basic
+```
 
-- AI in microbiology
-- Integration of protein folding into drug targeting
-- Structural-based antibiotic analysis
-- Computational resistance insight
+### Advanced mode
 
----
+```bash
+python predict_bacteria.py --image "Bacteria dataset/Bacillus subtilis_gram stain/Bacillus subtilis_gram stain_1.png" --mode advanced
+```
 
-#  Limitations
+## Run simple PyQt5 UI
 
-- Real antibiotic prescription requires laboratory sensitivity tests.
-- Structural prediction does not guarantee real-world inhibition.
-- Clinical validation is required for medical application.
+```bash
+python bacteria_ui.py
+```
 
----
+UI features:
+- Upload an image from dataset or your test folder
+- Predict bacteria name + bacteria type + dominant morphology
+- View JSON output directly in the app
 
-#  Technologies Used
+## Run tests
 
-###  Computer Vision
-- PyTorch / TensorFlow
-- OpenCV
+```bash
+python -m pytest -q
+```
 
-###  Bioinformatics
-- UniProt API
-- NCBI API
+## Troubleshooting
 
-###  Protein Structure
-- AlphaFold
-- PDB
-- PyMOL / Chimera
-
-###  Machine Learning
-- Scikit-learn
-- XGBoost
-- Neural Networks
-
----
-
-#  Academic Value
-
-This project combines:
-
-- Artificial Intelligence
-- Bioinformatics
-- Structural Biology
-- Drug Informatics
-- Computational Biology
-
-It is suitable for:
-- Final year AIML project
-- Research internship
-- Paper publication (with extension)
-
----
-
-#  Conclusion
-
-This system does not replace laboratory experiments but provides AI-assisted structural insight into antibiotic targeting.
-
-It transforms:
-
-Image → Biology → Structure → Drug Insight
-
-Making it a powerful interdisciplinary AI system.
-Hii 
-
+- If prediction fails with missing model file, run training first.
+- If images are not found, verify `dataset_full.csv` paths remain under `Bacteria dataset/`.
+- For better accuracy, add more labeled spiral samples and retrain.

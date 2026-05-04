@@ -7,6 +7,7 @@ __pycache__/
 env/
 venv/
 ENV/
+.venv/
 build/
 develop-eggs/
 dist/
@@ -37,6 +38,8 @@ MANIFEST
 # Data & Datasets
 data/
 datasets/
+Bacteria dataset/
+test_data/
 *.jpg
 *.jpeg
 *.png
@@ -52,6 +55,7 @@ logs/
 *.log
 results/
 debug/
+artifacts/
 
 # Environment
 .env
